@@ -1,78 +1,59 @@
 #include <iostream>
+#include <fstream>
 #include <string>
+#include <algorithm>
+#include <map>
+#include <string.h>
+#include <unistd.h>
 
 #define SIZE_BYTE 8
 #define LSB_MASK 0x01
 
-#define ASCII_0 0x30
-#define ASCII_9 0x39
-#define ASCII_A 0x41
-#define ASCII_Z 0x5A
-#define ASCII_a 0x61
-#define ASCII_z 0x7A
-#define ASCII_p 0x2E
-#define ASCII_c 0x2C
-
-#define NICKSCII_0 0x00
-#define NICKSCII_9 0x09
-#define NICKSCII_A 0x0A
-#define NICKSCII_Z 0x23
-#define NICKSCII_a 0x24
-#define NICKSCII_z 0x3D
-#define NICKSCII_p 0x3E
-#define NICKSCII_c 0x3F
-
 using namespace std;
 
-bool *string_to_bool(string &in);
-bool *char_to_bool(char letter);
-void compress_string(string &in);
-void ascii_to_nickscii(string &in, char *out);
+uint  pre_process_file_for_compression(string &filename, map<string,int> &letter_heuristics, char **buf);
 
 int main(int argc, char *argv[]) {
-    cout << "COMPRESS!" << endl;
-    string word;
-    while(true) {
-        getline (cin, word);
-        if(word.compare("") == 0) {
-            break;
-        }
-        compress_string(word);
-    }
+    printf("COMPRESS!\nInput file name: ");
+    string filename;
+    getline(cin,filename);
+
+    map<string,int> letter_heuristics;
+    char *original_text;
+
+    pre_process_file_for_compression(filename, letter_heuristics, &original_text);
+
+    for (map<string,int>::iterator it=letter_heuristics.begin(); it!=letter_heuristics.end(); ++it)
+        cout << it->first << " => " << it->second << '\n';
+
+//    printf("%s\n", original_text);
     return 0;
 }
 
-void compress_string(string &in) {
-
-}
-
-void ascii_to_nickscii(string &in, char *out) {
-    uint length = in.size();
-    uint num_ascii_bits = length * 8;
-    uint num_nickscii_bits = num_ascii_bits * 3 / 4;
-    uint num_nickscii_chars = (num_nickscii_bits / 8) + (num_nickscii_bits % 8) ? 1 : 0;
-    char *nickscii_string = new char[num_nickscii_chars];
-}
-
-bool *string_to_bool(string &in) {
-    char letter;
-    for(uint i = 0; i < in.size(); ++i){
-        letter = in[i];
-        bool *foo = char_to_bool(letter);
-        for(int j = 7; j >= 0; --j) {
-            cout << foo[j];
+uint pre_process_file_for_compression(string &filename, map<string,int> &letter_heuristics, char **buf) {
+    string filepath = "/home/nick/projects/SimpleCompression/TextFiles/";
+    uint char_cnt = 0;
+    filepath = filepath + filename + ".txt";
+    ifstream file (filepath);
+    if(file.is_open()) {
+        uint buf_size = 0;
+        while(file.get() != -1) {
+            ++buf_size;
         }
-        cout << endl;
+        *buf = (char *)calloc(buf_size, sizeof(char));
+        file.clear();
+        file.seekg(0, ios::beg);
+        char curr_char;
+        string curr_char_as_string = "a";
+        for(uint i = 0; i < buf_size; ++i) {
+            curr_char = file.get();
+            curr_char_as_string[0] = curr_char;
+            letter_heuristics[curr_char_as_string]++;
+            (*buf)[i] = curr_char;
+        }
+        file.close();
+    } else {
+        cout << "Unable to open file: " << filepath << endl;
     }
-
-}
-
-bool *char_to_bool(char letter) {
-    char masked;
-    bool *binary = new bool[SIZE_BYTE];
-    for(uint i = SIZE_BYTE - 1; i >= 0; --i) {
-        masked = letter & (LSB_MASK<<(i));
-        binary[i] = (bool)masked;
-    }
-    return binary;
+    return char_cnt;
 }
