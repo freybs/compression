@@ -9,7 +9,8 @@ CONFIG -= app_bundle
 
 TEMPLATE = app
 
-SOURCES += main.cpp
+SOURCES += main.cpp \
+    compression_instance.cpp
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which as been marked deprecated (the exact warnings
@@ -36,3 +37,6 @@ DISTFILES += \
     TextFiles/short.txt \
     TextFiles/tiny.txt \
     TextFiles/tomsawyer.txt
+
+HEADERS += \
+    compression_instance.h
