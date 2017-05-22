@@ -13,12 +13,17 @@
 using namespace std;
 
 int main(int argc, char *argv[]) {
-    printf("COMPRESS!\nInput file name: ");
+    cout << "COMPRESS!\nInput file name: ";
     string filename;
     getline(cin,filename);
 
-    Compression_Instance compr(filename);
-    compr.print_letter_heuristics();
-    compr.build_meta_data();
+    try{
+        Compression_Instance *compr = new Compression_Instance(filename);
+        compr->print_letter_heuristics();
+        compr->build_meta_data();
+        delete(compr);
+    } catch (const exception& e) {
+        cout << e.what() << endl;
+    }
     return 0;
 }
